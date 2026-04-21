@@ -26,38 +26,55 @@ end
 
 # --- Routes ---
 
+# get "/" do
+#     @sessions = SESSIONS.order(:start_time).all.map do |s|
+#         s.merge(spots_remaining: spots_remaining(s))
+#     end
+#     erb :index
+# end
+
 get "/" do
-    @sessions = SESSIONS.order(:start_time).all.map do |s|
-        s.merge(spots_remaining: spots_remaining(s))
-    end
-    erb :index
+  # Build next 14 available dates
+  @dates = (0..13).map { |i| Date.today + i }
+  @selected_date = params[:date] && valid_date?(params[:date]) \
+    ? Date.parse(params[:date]) \
+    : Date.today
+  @sessions = SESSIONS.order(:start_time).all.map do |s|
+    s.merge(spots_remaining: spots_remaining(s, @selected_date))
+  end
+  erb :index
 end
 
-# HTMX: returns a fresh availability fragment
 get "/sessions/availability" do
+  halt 400, "Invalid date" unless params[:date] && valid_date?(params[:date])
+  @selected_date = Date.parse(params[:date])
   @sessions = SESSIONS.order(:start_time).all.map do |s|
-    s.merge(spots_remaining: spots_remaining(s))
+    s.merge(spots_remaining: spots_remaining(s, @selected_date))
   end
   erb :availability, layout: false
 end
 
-# HTMX: returns the booking form for a chosen session
 get "/sessions/:id/book" do
   @session = SESSIONS.first(id: params[:id])
   halt 404, "Session not found" unless @session
-  @spots_remaining = spots_remaining(@session)
+  halt 400, "Invalid date" unless params[:date] && valid_date?(params[:date])
+  @selected_date = Date.parse(params[:date])
+  @spots_remaining = spots_remaining(@session, @selected_date)
   erb :book_form, layout: false
 end
 
-# Handle form submission — create a pending booking, then redirect to Stripe
 post "/bookings" do
   session_id = params[:session_id].to_i
   name       = params[:name].to_s.strip
   email      = params[:email].to_s.strip
   quantity   = params[:quantity].to_i
+  date_str   = params[:date].to_s.strip
 
   @session = SESSIONS.first(id: session_id)
   render_error "Invalid session." unless @session
+  render_error "Invalid date." unless valid_date?(date_str)
+
+  booking_date = Date.parse(date_str)
 
   if name.empty? || email.empty? || quantity < 1
     render_error "Please fill in all fields."
@@ -67,15 +84,15 @@ post "/bookings" do
 
   DB.transaction do
     taken = BOOKINGS
-      .where(session_id: session_id, status: "paid")
+      .where(session_id: session_id, date: booking_date, status: "paid")
       .sum(:quantity) || 0
 
     remaining = @session[:capacity] - taken
-
     raise Sequel::Rollback if quantity > remaining
 
     booking_id = BOOKINGS.insert(
       session_id: session_id,
+      date:       booking_date,
       name:       name,
       email:      email,
       quantity:   quantity,
@@ -99,14 +116,14 @@ post "/bookings" do
           currency:     "usd",
           unit_amount:  TICKET_PRICE,
           product_data: {
-            name: "Water Park Ticket — #{@session[:name]}",
+            name: "Water Park Ticket — #{@session[:name]}, #{booking_date.strftime("%b %d")}",
           },
         },
         quantity: quantity,
       }],
       mode:        "payment",
       success_url: "#{request.base_url}/bookings/#{booking_id}/confirmation?stripe_session_id={CHECKOUT_SESSION_ID}",
-      cancel_url: "#{request.base_url}/bookings/cancel?stripe_session_id={CHECKOUT_SESSION_ID}",
+      cancel_url:  "#{request.base_url}/bookings/cancel?stripe_session_id={CHECKOUT_SESSION_ID}",
       metadata: { booking_id: booking_id }
     )
   rescue Stripe::StripeError => e
@@ -180,21 +197,27 @@ helpers do
     halt status, erb(:error, layout: false)
   end
 
-  def spots_taken(session_id)
+  def spots_taken(session_id, date)
     paid = BOOKINGS
-      .where(session_id: session_id, status: "paid")
+      .where(session_id: session_id, date: date, status: "paid")
       .sum(:quantity) || 0
 
-    # Count pending bookings less than 15 minutes old as held spots
     pending = BOOKINGS
-      .where(session_id: session_id, status: "pending")
+      .where(session_id: session_id, date: date, status: "pending")
       .where { created_at > Time.now - (15 * 60) }
       .sum(:quantity) || 0
 
     paid + pending
   end
 
-  def spots_remaining(session)
-    session[:capacity] - spots_taken(session[:id])
+  def spots_remaining(session, date)
+    session[:capacity] - spots_taken(session[:id], date)
+  end
+
+  def valid_date?(date_str)
+    date = Date.parse(date_str)
+    date >= Date.today && date <= Date.today + 60
+  rescue
+    false
   end
 end

@@ -1,5 +1,29 @@
-<!-- views/confirmation.erb -->
-<h1>🎉 You're booked!</h1>
-<p>Thanks <strong><%= @booking[:name] %></strong>, see you at the <strong><%= @session[:name] %></strong> session!</p>
-<p>A confirmation will be sent to <strong><%= @booking[:email] %></strong>.</p>
-<a href="/">← Back to sessions</a>
+<div class="container">
+  <div class="confirmation">
+    <div class="confirmation-icon">🎉</div>
+    <h1>You're all set!</h1>
+    <p>See you at the water park, <strong><%= @booking[:name].split.first %></strong>!</p>
+    <p>A confirmation is on its way to <strong><%= @booking[:email] %></strong>.</p>
+
+    <div class="confirmation-card">
+      <div class="confirmation-card-row">
+        <span>Date</span>
+        <strong><%= @booking[:date].strftime("%A, %B %-d") %></strong>
+      </div>
+      <div class="confirmation-card-row">
+        <span>Session</span>
+        <strong><%= @session[:name] %></strong>
+      </div>
+      <div class="confirmation-card-row">
+        <span>Tickets</span>
+        <strong><%= @booking[:quantity] %></strong>
+      </div>
+      <div class="confirmation-card-row">
+        <span>Total paid</span>
+        <strong>$<%= "%.2f" % (@booking[:quantity] * 25) %></strong>
+      </div>
+    </div>
+
+    <a href="/" class="back-link">← Book another session</a>
+  </div>
+</div>

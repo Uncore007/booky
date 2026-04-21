@@ -1,23 +1,40 @@
-<!-- views/book_form.erb -->
-<h2>Book: <%= @session[:name] %></h2>
-<p><%= @spots_remaining %> spots remaining · $25 per ticket</p>
+<div class="modal-session-tag">🌊 <%= @selected_date.strftime("%A, %b %-d") %> · <%= @session[:name] %></div>
+<h2>Book tickets</h2>
+<p class="modal-price"><%= @spots_remaining %> spots remaining · $25 per ticket</p>
 
 <form action="/bookings" method="post">
   <input type="hidden" name="session_id" value="<%= @session[:id] %>">
+  <input type="hidden" name="date" value="<%= @selected_date %>">
 
-  <label>Name<br>
-    <input type="text" name="name" required style="width:100%; margin-top:4px;">
-  </label><br><br>
+  <div class="form-group">
+    <label>Your name</label>
+    <input type="text" name="name" placeholder="Jane Smith" required>
+  </div>
 
-  <label>Email<br>
-    <input type="email" name="email" required style="width:100%; margin-top:4px;">
-  </label><br><br>
+  <div class="form-group">
+    <label>Email address</label>
+    <input type="email" name="email" placeholder="jane@example.com" required>
+  </div>
 
-  <label>Tickets<br>
-    <input type="number" name="quantity" value="1" min="1" max="<%= @spots_remaining %>" required style="width:60px; margin-top:4px;">
-  </label><br><br>
+  <div class="form-group">
+    <label>Number of tickets</label>
+    <input type="number" name="quantity" value="1" min="1"
+           max="<%= @spots_remaining %>" required
+           oninput="updateTotal(this.value)">
+  </div>
 
-  <button type="submit" style="background:#0077cc; color:white; padding:0.6rem 1.5rem; border:none; border-radius:6px; cursor:pointer;">
-    Confirm Booking →
-  </button>
+  <div class="form-submit-row">
+    <div class="form-total">
+      <span>Total</span>
+      <span id="total-display">$25.00</span>
+    </div>
+    <button type="submit" class="btn btn-primary">Pay securely →</button>
+  </div>
 </form>
+
+<script>
+  function updateTotal(qty) {
+    const total = (parseInt(qty) || 1) * 25;
+    document.getElementById("total-display").textContent = "$" + total.toFixed(2);
+  }
+</script>
