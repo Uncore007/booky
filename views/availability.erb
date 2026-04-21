@@ -1,0 +1,28 @@
+<!-- views/availability.erb -->
+<% @sessions.each do |s| %>
+  <div style="border:1px solid #ccc; padding:1rem; margin:0.5rem 0; border-radius:8px; background:white;">
+    <strong><%= s[:name] %></strong> —
+    <% if s[:spots_remaining] > 0 %>
+      <%= s[:spots_remaining] %> spots left
+      <button
+        hx-get="/sessions/<%= s[:id] %>/book"
+        hx-target="#booking-modal-content"
+        hx-swap="innerHTML"
+        onclick="document.getElementById('booking-modal').style.display='flex'">
+        Book Now
+      </button>
+    <% else %>
+      <span style="color:red;">Sold Out</span>
+    <% end %>
+  </div>
+<% end %>
+
+<div id="booking-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); justify-content:center; align-items:center;">
+  <div style="background:white; padding:2rem; border-radius:12px; min-width:320px; position:relative;">
+    <button onclick="document.getElementById('booking-modal').style.display='none'"
+            style="position:absolute; top:1rem; right:1rem;">✕</button>
+    <div id="booking-modal-content">
+      <!-- booking form loads here via HTMX -->
+    </div>
+  </div>
+</div>

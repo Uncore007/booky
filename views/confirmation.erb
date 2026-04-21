@@ -1,0 +1,5 @@
+<!-- views/confirmation.erb -->
+<h1>🎉 You're booked!</h1>
+<p>Thanks <strong><%= @booking[:name] %></strong>, see you at the <strong><%= @session[:name] %></strong> session!</p>
+<p>A confirmation will be sent to <strong><%= @booking[:email] %></strong>.</p>
+<a href="/">← Back to sessions</a>

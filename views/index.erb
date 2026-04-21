@@ -1,0 +1,21 @@
+<!-- views/index.erb -->
+<h1>🌊 Water Park Tickets</h1>
+<p>Select a session below to book your tickets.</p>
+
+<% if params[:cancelled] %>
+  <div style="color:#856404; background:#fff3cd; border:1px solid #ffc107; padding:1rem; border-radius:8px; margin-bottom:1rem;">
+    ⚠️ <strong>Your payment was cancelled.</strong> No charge was made — pick a session below to try again.
+  </div>
+<% end %>
+
+<div id="availability"
+     hx-get="/sessions/availability"
+     hx-trigger="every 30s"
+     hx-swap="innerHTML">
+  <%= erb :availability, layout: false %>
+</div>
+
+<div hx-get="/bookings/cleanup"
+     hx-trigger="every 30s"
+     hx-swap="none">
+</div>
