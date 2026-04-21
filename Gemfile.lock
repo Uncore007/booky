@@ -34,6 +34,7 @@ GEM
       sinatra (= 4.2.1)
       tilt (~> 2.0)
     sqlite3 (2.9.3-x64-mingw-ucrt)
+    sqlite3 (2.9.3-x86_64-linux-gnu)
     stripe (19.0.0)
       bigdecimal
       logger
@@ -41,6 +42,7 @@ GEM
 
 PLATFORMS
   x64-mingw-ucrt
+  x86_64-linux
 
 DEPENDENCIES
   dotenv
@@ -67,6 +69,7 @@ CHECKSUMS
   sinatra (4.2.1) sha256=b7aeb9b11d046b552972ade834f1f9be98b185fa8444480688e3627625377080
   sinatra-contrib (4.2.1) sha256=10d091c944d268aa910c618ea40a3c3ebe0533e6e32990d84af92235a3d26b4a
   sqlite3 (2.9.3-x64-mingw-ucrt) sha256=61edb2ce7a58e800478602e88b67e99f029b44747405c94c0cce7d165b0d0a96
+  sqlite3 (2.9.3-x86_64-linux-gnu) sha256=85200a10c6cf5c60085fcca411a3168c5fba8fda3e2b1b0109ec277d7c226d46
   stripe (19.0.0) sha256=dc8cf11700638e6d0c0ca10063e7829ee90b26feb8e87811dcbbffc31645a656
   tilt (2.7.0) sha256=0d5b9ba69f6a36490c64b0eee9f6e9aad517e20dcc848800a06eb116f08c6ab3
 
