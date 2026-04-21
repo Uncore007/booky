@@ -2,7 +2,7 @@
 require "sequel"
 require "logger"
 
-DB = Sequel.connect("sqlite://waterpark.db", logger: Logger.new($stdout))
+DB = Sequel.connect(ENV["DATABASE_URL"] || "sqlite://waterpark.db")
 
 Sequel.extension :migration
 Sequel::Migrator.run(DB, "db/migrations")

@@ -5,7 +5,7 @@ require "sequel"
 require "dotenv/load"
 
 # --- Database ---
-DB = Sequel.connect("sqlite://waterpark.db")
+DB = Sequel.connect(ENV["DATABASE_URL"] || "sqlite://waterpark.db")
 Sequel.extension :migration
 
 SESSIONS = DB[:sessions]
